@@ -18,9 +18,6 @@ class GetWhoisData:
                 for contact in self.possible_contacts:
                     try:
                         if self.domain in i[contact]["email_address"].split("@")[1]:
-                            print(
-                                f'Found possible contact: {i[contact]["email_address"]}'
-                            )
                             return i[contact]["email_address"]
                     except KeyError:
                         pass
@@ -33,17 +30,10 @@ class GetWhoisData:
         for i in self.response.json()["whois_records"]:
             try:
                 for contact in self.possible_contacts:
-                    for bad in self.bad_registrars:
-                        try:
-                            if bad not in i[contact]["company_name"].lower():
-                                print(
-                                    f'Found possible company: {i[contact]["company_name"]}'
-                                )
-                                return i[contact]["company_name"]
-                        except KeyError:
-                            pass
+                    if not any(bad in i[contact]["company_name"].lower() for bad in self.bad_registrars):
+                        return i[contact]["company_name"]
             except KeyError:
-                pass
+               continue 
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help", "help"])
 @click.command(no_args_is_help=True, context_settings=CONTEXT_SETTINGS)
@@ -94,6 +84,11 @@ def main(domain, key):
     except Exception as err:
         print(f"Unable to get info from whoxy: {err}")
         exit(1)
+    
+    if email: 
+        print(f"Potential email: {email}")
+    if company: 
+        print(f"Potential company: {company}")
 
 
 if __name__ == "__main__":
