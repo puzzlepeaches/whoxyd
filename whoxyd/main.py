@@ -70,6 +70,12 @@ def main(domain, key):
         "administrative_contact",
         "technical_contact",
     ]
+    dat = {
+        "domain": domain,
+        "found": False,
+        "email": None,
+        "company": None,
+    }
 
     # Defining bad registrar names
     bad_registrars = ["protection", "privacy", "guard", "proxy", "domain", "whois"]
@@ -81,13 +87,16 @@ def main(domain, key):
     try:
         response = requests.get(f"http://api.whoxy.com/?key={key}&history={domain}")
     except requests.exceptions.RequestException as e:
-        print(f"Request failed: {e}")
+        dat["error"] = str(e)
+        print(json.dumps(dat))
+        exit(1)
 
     # Instantiate the GetWhoisData class
     try:
         getwhoisdata = GetWhoisData(domain, response, possible_contacts, bad_registrars)
     except Exception as err:
-        print(f"Unable to instantiate GetWhoisData: {err}")
+        dat["error"] = str(err)
+        print(json.dumps(dat))
         exit(1)
 
     # Get historical email addresses and company names
@@ -95,14 +104,9 @@ def main(domain, key):
         email = getwhoisdata.get_email()
         company = getwhoisdata.get_company()
     except Exception as err:
-        print(f"Unable to get info from whoxy: {err}")
+        dat["error"] = str(err)
+        print(json.dumps(dat))
         exit(1)
-
-    dat = {
-        "found": False,
-        "email": None,
-        "company": None,
-    }
 
     if email is not None:
         dat["found"] = True
