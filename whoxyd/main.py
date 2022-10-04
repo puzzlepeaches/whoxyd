@@ -88,7 +88,7 @@ def main(domain, key):
         response = requests.get(f"http://api.whoxy.com/?key={key}&history={domain}")
     except requests.exceptions.RequestException as e:
         dat["error"] = str(e)
-        print(json.dumps(dat))
+        print(json.dumps(dat, indent=4))
         exit(1)
 
     # Instantiate the GetWhoisData class
@@ -96,7 +96,7 @@ def main(domain, key):
         getwhoisdata = GetWhoisData(domain, response, possible_contacts, bad_registrars)
     except Exception as err:
         dat["error"] = str(err)
-        print(json.dumps(dat))
+        print(json.dumps(dat, indent=4))
         exit(1)
 
     # Get historical email addresses and company names
@@ -105,7 +105,7 @@ def main(domain, key):
         company = getwhoisdata.get_company()
     except Exception as err:
         dat["error"] = str(err)
-        print(json.dumps(dat))
+        print(json.dumps(dat, indent=4))
         exit(1)
 
     if email is not None:
