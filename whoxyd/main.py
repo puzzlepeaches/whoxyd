@@ -1,6 +1,8 @@
+import json
+
 import click
-import validators
 import requests
+import validators
 
 
 class GetWhoisData:
@@ -18,7 +20,12 @@ class GetWhoisData:
                 for contact in self.possible_contacts:
                     try:
                         if self.domain in i[contact]["email_address"].split("@")[1]:
-                            return i[contact]["email_address"]
+                            if not any(
+                                bad in i[contact]["email_address"].lower()
+                                for bad in self.bad_registrars
+                            ):
+                                return i[contact]["email_address"]
+                            # return i[contact]["email_address"]
                     except KeyError:
                         pass
             except KeyError:
@@ -30,12 +37,18 @@ class GetWhoisData:
         for i in self.response.json()["whois_records"]:
             try:
                 for contact in self.possible_contacts:
-                    if not any(bad in i[contact]["company_name"].lower() for bad in self.bad_registrars):
+                    if not any(
+                        bad in i[contact]["company_name"].lower()
+                        for bad in self.bad_registrars
+                    ):
                         return i[contact]["company_name"]
             except KeyError:
-               continue 
+                continue
+
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help", "help"])
+
+
 @click.command(no_args_is_help=True, context_settings=CONTEXT_SETTINGS)
 @click.argument("domain", required=True)
 @click.option(
@@ -84,11 +97,21 @@ def main(domain, key):
     except Exception as err:
         print(f"Unable to get info from whoxy: {err}")
         exit(1)
-    
-    if email: 
-        print(f"Potential email: {email}")
-    if company: 
-        print(f"Potential company: {company}")
+
+    dat = {
+        "found": False,
+        "email": None,
+        "company": None,
+    }
+
+    if email is not None:
+        dat["found"] = True
+        dat["email"] = email
+    if company is not None:
+        dat["found"] = True
+        dat["company"] = company
+
+    print(json.dumps(dat, indent=4))
 
 
 if __name__ == "__main__":
