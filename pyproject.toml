@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "whoxyd"
-version = "0.1.0"
+version = "0.1.1"
 description = "Get useable historical data from the whoxy API"
 authors = ["puzzlepeaches <null@localhost.local>"]
 
